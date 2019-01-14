@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+
+<!-- AUTHOR: Wiseplus Developers Team
+     LEAD DEVELOPER: Sam Anibe
+     CopyRights: 2017 Wiseplus Ineventions Limited  
+     
+     
+     
+WWW                WWW  III   SSSSSSSSSSSSSSSSS EEEEEEE   EEEEEEEEE LL      U      U     SSSSSSSSSSS
+WWW                WWW  III   SSS               EE        EE      E LL      U      U    SS
+WWW     WWWWWW     WWW  III       BSSSSSSSS     EE        EEEEEEEE  LL      U      U      SSSSSSSS
+WWW    W      W    WWW  III              SS     EEEEEEE   EE        LL      U      U           SS
+WWW   W        W   WWW  III            SS       EE        EE        LL      U      U          SS
+WWWWWW           WWWWW  III  SSSSSSSSSSS        EEEEEEE   EE        LLLLLL  UUUUUUUU   SSSSSSSS
+     
+     
+     
+     -->
+
+<head>
+	<meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+
+	<title>CampusWatch</title>
+	<link rel="stylesheet" href="themes/moby.min.css" />
+	<link rel="stylesheet" href="themes/jquery.mobile.icons.min.css" />
+	<link rel="stylesheet" href="themes/jquery.mobile.structure-1.4.5.min.css" />
+	<script src="themes/jquery-1.11.1.min.js"></script>
+	<script src="themes/jquery.mobile-1.4.5.min.js"></script>
+  <script src="themes/sms-link.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript" charset="utf-8" src="sms.js"></script> 
+
+	<script  async defer src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDJHVlTHjMYnj40nQy2dTAqIRjXlESEMmo"></script>
+
+<script type="text/javascript" charset="utf-8">
+
+    // Wait for Cordova to load
+    //
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    // Cordova is ready
+    //
+    function onDeviceReady() {
+        navigator.geolocation.getCurrentPosition(onSuccess, onError);
+    }
+
+    // onSuccess Geolocation
+    //
+    function onSuccess(position) {
+        var element = document.getElementById('geolocate');
+        element.innerHTML = 'Latitude: '           + position.coords.latitude              + '<br />' +
+                            'Longitude: '          + position.coords.longitude             + '<br />' +
+                            /*'Altitude: '           + position.coords.altitude              + '<br />' +
+                            'Accuracy: '           + position.coords.accuracy              + '<br />' +
+                            'Altitude Accuracy: '  + position.coords.altitudeAccuracy      + '<br />' +
+                            'Heading: '            + position.coords.heading               + '<br />' +
+                            'Speed: '              + position.coords.speed                 + '<br />' +
+                            'Timestamp: '          +                                   position.timestamp         + */ '<br />';
+    }
+
+    // onError Callback receives a PositionError object
+    //
+    function onError(error) {
+        alert('code: '    + error.code    + '\n' +
+                'message: ' + error.message + '\n');
+    }
+
+    </script>
+
+
+<script type="text/javascript" charset="utf-8">
+
+   /* ANIBE SMS PLUGIN CODE HERE */
+var ok = ","
+var messageInfo = {
+    phoneNumber: "+2348100135069",
+    textMessage: "Security Threat at " + "http://maps.google.com/maps?q=" + position.coords.latitude + ok + position.coords.longitude;
+};
+
+sms.sendMessage(messageInfo, function(message) {
+    console.log("success: " + message);
+}, function(error) {
+    console.log("code: " + error.code + ", message: " + error.message);
+});
+
+
+
+/* ANIBE SMS CODING ENDS HERE */
+</script>
+
+    <script type="text/javascript" charset="utf-8">
+/*jslint sloppy:true, browser:true, devel:true, white:true, vars:true, eqeq:true, nomen:true, unparam:true */
+/*global intel, google, Marker, device */
+
+var _map = null;
+var _seconds = 30;
+var _llbounds = null;
+var myLatLng;
+var oldLatLng = "";
+var boolTripTrack = true;
+//Create the google Maps and LatLng object 
+
+function drawMap() {
+    //Creates a new google maps object
+    var latlng = new google.maps.LatLng(currentLatitude, currentLongitude);
+    myLatLng = latlng;
+    var mapOptions = {
+        center: latlng,
+        zoom: 5,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoomControl: true,
+        zoomControlOptions: {
+            style: google.maps.ZoomControlStyle.SMALL,
+            position: google.maps.ControlPosition.LEFT_TOP
+        }
+    };
+    if (boolTripTrack === true) {
+        if(google.maps){
+            _map = new google.maps.Map(document.getElementById("map"), mapOptions);
+        }
+        
+        else {
+            alert("Unable to display map.");
+        }
+    }
+}
+//9.6033597,6.4504229,23977m = FUTMINNA
+var currentLatitude = "9.6548463";
+var currentLongitude = "6.5253873";
+var options = {
+    timeout: 10000,
+    maximumAge: 11000,
+    enableHighAccuracy: true
+};
+//Success callback
+var suc = function(p) {
+        console.log("geolocation success", 4);
+        //Draws the map initially
+        if (_map === null) {
+            currentLatitude = p.coords.latitude;
+            currentLongitude = p.coords.longitude;
+            drawMap();
+        } else {
+            myLatLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+        }
+        //Creates a new google maps marker object for using with the pins
+        if ((myLatLng.toString().localeCompare(oldLatLng.toString())) !== 0) {
+            //Create a new map marker
+            var Marker = new google.maps.Marker({
+                position: myLatLng,
+                map: _map
+            });
+            if (_llbounds === null) {
+                //Create the rectangle in geographical coordinates
+                _llbounds = new google.maps.LatLngBounds(new google.maps.LatLng(p.coords.latitude, p.coords.longitude)); //original
+            } else {
+                //Extends geographical coordinates rectangle to cover current position
+                _llbounds.extend(myLatLng);
+            }
+            //Sets the viewport to contain the given bounds & triggers the "zoom_changed" event
+            _map.fitBounds(_llbounds);
+        }
+        oldLatLng = myLatLng;
+    };
+var fail = function() {
+        console.log("Geolocation failed. \nPlease enable GPS in Settings.", 1);
+    };
+var getLocation = function() {
+        console.log("in getLocation", 4);
+    };
+    //Execute when the DOM loads  
+
+function onDeviceReady() {
+    try {
+        if (navigator.geolocation !== null) {
+            document.getElementById("map").style.height = screen.height + "px";
+            navigator.geolocation.watchPosition(suc, fail, options);
+        }
+        else {
+            alert("navigator.geolocation == null")
+        }
+    } catch (e) {
+        alert(e.message);
+    }
+
+    try {
+        //hide splash screen
+        navigator.splashscreen.hide(); 
+    } catch (e) {}
+}
+document.addEventListener("deviceready", onDeviceReady, false);
+
+
+
+    </script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', (function () {
+  link = new SMSLink.link();
+    link.replaceAll();
+        }), false
+</script>
+
+
+
+
+    <script>
+    
+      
+      $( document ).bind( "mobileinit", function() {
+    // Make your jQuery Mobile framework configuration changes here!
+
+    $.mobile.allowCrossDomainPages = true;
+});
+
+    </script>
+
+
+
+</head>
+
+<body>
+	<div data-role="page" data-theme="a">
+		<div data-role="header" data-position="inline">
+			<h1>Main Menu</h1>
+		</div>
+
+
+		<div data-role="content" data-theme="a">
+
+
+			<div role="main" class="ui-content">
+			 <i id="geolocate"></i>
+
+					<div id="map" style="width:100%;height:40%;">
+
+							<p>Getting Location...</p>
+					</div>
+				
+               
+                
+            
+			</div>
+ 
+
+		</div>
+
+		<div data-position="fixed" data-role="footer">
+			<div data-role="navbar">
+      <div id="samanibe">
+				<ul>
+					<li>
+						<a href="sms:+2348100135069?body=Ambulance needed at http://maps.google.com/maps?z=5&q=+currentLatitude+, +currentLongitude+;" data-icon="plus">Ambulance</a>
+
+					<li >
+						<a href="sms:+2348100135069?body=Fire Emergency at http://maps.google.com/maps?z=5&q=+currentLatitude+, +currentLongitude+;" data-icon="bullets">Fire Unit</a>
+					</li>
+
+					<li>
+
+                <a onclick="sendMessage()" data-icon="alert">Security</a>
+                  </li>
+
+
+				</ul>
+
+
+			</div>
+		</div>
+    </div>
+
+	</div>
+
+</body>
+
+</html>
