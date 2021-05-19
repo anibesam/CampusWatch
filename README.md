@@ -1,2 +1,2 @@
 # CampusWatch
-A mobile App using Jquery Mobile and Google Map
+A mobile App using Cordova, Jquery Mobile and Google Map
